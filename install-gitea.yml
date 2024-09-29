@@ -19,28 +19,28 @@
       ansible.builtin.file:
         path: "{{ item }}"
         state: directory
-        owner: "{{ gitea_user }}"
-        group: "{{ gitea_group }}"
+        owner: "{{ gitea.gitea_user }}"
+        group: "{{ gitea.gitea_group }}"
         mode: '0755'
       loop:
-        - "{{ gitea_home }}"
-        - "{{ gitea_repo_path }}"
+        - "{{ gitea.gitea_home }}"
+        - "{{ gitea.gitea_repo_path }}"
         - "/etc/gitea"
     - name: Create gitea user
       ansible.builtin.user:
-        name: "{{ gitea_user }}"
+        name: "{{ gitea.gitea_user }}"
         comment: "Gitea service account"
-        home: "{{ gitea_home }}"
+        home: "{{ gitea.gitea_home }}"
         shell: /bin/bash
         create_home: true
     - name: Download Gitea binary
       ansible.builtin.get_url:
-        url: "{{ gitea_download_url }}"
-        dest: "{{ gitea_bin_path }}"
+        url: "{{ gitea.gitea_download_url }}"
+        dest: "{{ gitea.gitea_bin_path }}"
         mode: '0755'
     - name: Create Gitea configuration file
       ansible.builtin.copy:
-        dest: "{{ gitea_config_path }}"
+        dest: "{{ gitea.gitea_config_path }}"
         content: |
           APP_NAME = Gitea
           RUN_MODE = prod
@@ -61,16 +61,15 @@
           PATH = /var/lib/gitea/gitea.db
 
           [repository]
-          ROOT = {{ gitea_repo_path }}
+          ROOT = {{ gitea.gitea_repo_path }}
 
           [security]
           INSTALL_LOCK = true
           SECRET_KEY = random_secret_key
-        owner: "{{ gitea_user }}"
-        group: "{{ gitea_group }}"
+        owner: "{{ gitea.gitea_user }}"
+        group: "{{ gitea.gitea_group }}"
         mode: '0644'
     - name: Create Gitea systemd service file
-    
       ansible.builtin.copy:
         dest: /etc/systemd/system/gitea.service
         content: |
@@ -79,12 +78,12 @@
           After=network.target
 
           [Service]
-          User={{ gitea_user }}
-          Group={{ gitea_group }}
-          ExecStart={{ gitea_bin_path }} web
-          WorkingDirectory={{ gitea_home }}
+          User={{ gitea.gitea_user }}
+          Group={{ gitea.gitea_group }}
+          ExecStart={{ gitea.gitea_bin_path }} web
+          WorkingDirectory={{ gitea.gitea_home }}
           Restart=always
-          Environment=USER={{ gitea_user}} HOME={{ gitea_home }} GITEA_WORK_DIR={{ gitea_home }}
+          Environment=USER={{ gitea.gitea_user}} HOME={{ gitea.gitea_home }} GITEA_WORK_DIR={{ gitea.gitea_home }}
           [Install]
           WantedBy=multi-user.target
         mode: '0644'

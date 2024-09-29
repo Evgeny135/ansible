@@ -70,6 +70,7 @@
         group: "{{ gitea_group }}"
         mode: '0644'
     - name: Create Gitea systemd service file
+    
       ansible.builtin.copy:
         dest: /etc/systemd/system/gitea.service
         content: |

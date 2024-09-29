@@ -1,0 +1,95 @@
+---
+- name: Install Gitea from binary
+  hosts: all
+  become: true
+  # vars:
+    # gitea_version: "1.20.2"  # Укажите нужную версию Gitea
+    # gitea_user: "git"
+    # gitea_group: "git"
+    # gitea_home: "/var/lib/gitea"
+    # gitea_repo_path: "/var/lib/gitea/data/gitea-repositories"
+    # gitea_bin_path: "/usr/local/bin/gitea"
+    # gitea_config_path: "/etc/gitea/app.ini"
+    # gitea_download_url: "https://dl.gitea.io/gitea/{{ gitea_version }}/gitea-{{ gitea_version }}-linux-amd64"
+  tasks:
+    - name: Install vars file
+      ansible.builtin.include_vars:
+        vars.yml
+    - name: Ensure necessary directories exist
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ gitea_user }}"
+        group: "{{ gitea_group }}"
+        mode: '0755'
+      loop:
+        - "{{ gitea_home }}"
+        - "{{ gitea_repo_path }}"
+        - "/etc/gitea"
+    - name: Create gitea user
+      ansible.builtin.user:
+        name: "{{ gitea_user }}"
+        comment: "Gitea service account"
+        home: "{{ gitea_home }}"
+        shell: /bin/bash
+        create_home: true
+    - name: Download Gitea binary
+      ansible.builtin.get_url:
+        url: "{{ gitea_download_url }}"
+        dest: "{{ gitea_bin_path }}"
+        mode: '0755'
+    - name: Create Gitea configuration file
+      ansible.builtin.copy:
+        dest: "{{ gitea_config_path }}"
+        content: |
+          APP_NAME = Gitea
+          RUN_MODE = prod
+          [server]
+          DOMAIN = localhost
+          ROOT_URL = http://localhost:3000/
+          DISABLE_SSH = true
+          HTTP_PORT = 3000
+          LFS_START_SERVER = true
+          LFS_CONTENT_PATH = /var/lib/gitea/lfs
+          LFS_JWT_SECRET = random_lfs_jwt_secret
+          OFFLINE_MODE = false
+          START_SSH_SERVER = false
+          DISABLE_TLS = true
+
+          [database]
+          DB_TYPE = sqlite3
+          PATH = /var/lib/gitea/gitea.db
+
+          [repository]
+          ROOT = {{ gitea_repo_path }}
+
+          [security]
+          INSTALL_LOCK = true
+          SECRET_KEY = random_secret_key
+        owner: "{{ gitea_user }}"
+        group: "{{ gitea_group }}"
+        mode: '0644'
+    - name: Create Gitea systemd service file
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/gitea.service
+        content: |
+          [Unit]
+          Description=Gitea
+          After=network.target
+
+          [Service]
+          User={{ gitea_user }}
+          Group={{ gitea_group }}
+          ExecStart={{ gitea_bin_path }} web
+          WorkingDirectory={{ gitea_home }}
+          Restart=always
+          Environment=USER={{ gitea_user}} HOME={{ gitea_home }} GITEA_WORK_DIR={{ gitea_home }}
+          [Install]
+          WantedBy=multi-user.target
+        mode: '0644'
+    - name: Reload systemd and enable Gitea
+      ansible.builtin.systemd:
+        daemon_reload: true
+        name: gitea
+        enabled: true
+        state: started

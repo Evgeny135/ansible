@@ -1,0 +1,10 @@
+name: docker
+gitea:
+  gitea_version: "1.22.2"
+  gitea_user: "git"
+  gitea_group: "git"
+  gitea_home: "/var/lib/gitea"
+  gitea_repo_path: "/var/lib/gitea/data/gitea-repositories"
+  gitea_bin_path: "/usr/local/bin/gitea"
+  gitea_config_path: "/etc/gitea/app.ini"
+  gitea_download_url: "https://dl.gitea.io/gitea/{{ gitea_version }}/gitea-{{ gitea_version }}-linux-amd64"

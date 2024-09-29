@@ -1,0 +1,40 @@
+---
+- name: Install docker
+  hosts: server
+  become: true
+  tasks:
+    - name: Set vars path
+      ansible.builtin.include_vars: vars.yml
+    - name: Update apt package
+      ansible.builtin.apt:
+        update_cache: true
+    - name: Install dependencies
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+    - name: Add gpg key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+    - name: Add docker repo
+      ansible.builtin.apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+    - name: Install {{ name }}
+      ansible.builtin.apt:
+        name: docker-ce
+        state: present
+    - name: Run docker
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+        enabled: true
+    - name: Adding debian in docker
+      ansible.builtin.user:
+        name: debian
+        groups: docker
+        append: true

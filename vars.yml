@@ -3,11 +3,11 @@ name: docker
 
 # Файл с переменными для установки Gitea через бинарник
 gitea:
-  gitea_user: "debian"  # Системный пользователь для Gitea
-  gitea_group: "debian"  # Группа пользователя Gitea
-  gitea_home: "/var/lib/gitea"  # Домашняя директория Gitea
-  gitea_repo_path: "/var/lib/gitea/data"
-  gitea_bin_path: "/usr/local/bin/gitea"  # Путь для бинарного файла Gitea
-  gitea_config_path: "/etc/gitea/app.ini"  # Путь для конфигурационного файла Gitea
-  gitea_download_url: "https://dl.gitea.com/gitea/1.22.2/gitea-1.22.2-linux-amd64"  # Ссылка для скачивания Gitea
-  gitea_dump_file: "/home/debian/gitea_backup.zip"
+  gitea_user: "debian"  # Пользователь
+  gitea_group: "debian"  # Группа пользователя
+  gitea_home: "/var/lib/gitea"  # Домашняя директория
+  gitea_repo_path: "/var/lib/gitea/data" # Путь для репозиториев
+  gitea_bin_path: "/usr/local/bin/gitea"  # Путь для бинарного файла
+  gitea_config_path: "/etc/gitea/app.ini"  # Путь для конфигурационного файла
+  gitea_download_url: "https://dl.gitea.com/gitea/1.22.2/gitea-1.22.2-linux-amd64"  # Ссылка для скачивания
+  gitea_dump_file: "/home/debian/gitea_backup.zip" # Путь для архива для резервной копии

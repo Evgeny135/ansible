@@ -1,0 +1,26 @@
+---
+- name: Резервная копия
+  hosts: server
+  become: true
+  vars:
+    gitea_dump_file: "/home/debian/gitea_backup.zip"
+    gitea_data_path: "/var/lib/gitea/"
+    gitea_config_path: "/etc/gitea/app.ini"
+  tasks:
+    - name: Подключение переменных
+      ansible.builtin.include_vars:
+        vars.yml
+    - name: Создание копии
+      ansible.builtin.shell:
+        gitea dump --verbose -f "{{ gitea.gitea_dump_file }}" -w "{{ gitea.gitea_home }}" -c "{{ gitea.gitea_config_path }}"
+      become_user: debian
+      register: gitea_dump_result
+    - name: Проверка результата резервного копирования
+      ansible.builtin.debug:
+        msg: "Резервное копирование завершено: {{ gitea_dump_result.stdout }}"
+      when: gitea_dump_result.rc == 0
+
+    - name: Сообщить об ошибке в случае неудачи
+      ansible.builtin.debug:
+        msg: "Ошибка при выполнении резервного копирования: {{ gitea_dump_result.stderr }}"
+      when: gitea_dump_result.rc != 0
